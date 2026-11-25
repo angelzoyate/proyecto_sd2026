@@ -12,6 +12,3 @@ sessions/
 .DS_Store
 .idea/
 .vscode/
-static/fotos/*
-!static/fotos/.gitkeep
-!static/fotos/default.png

@@ -8,7 +8,6 @@ if [ ! -f .env ]; then
   cp .env.example .env
 fi
 
-mkdir -p sessions static/fotos
+mkdir -p sessions
 
 printf '%s\n' "Codespace listo: edita .env con SUPABASE_URL y SUPABASE_KEY."
-printf '%s\n' "Ejecuta sql/schema.sql en el SQL Editor de Supabase antes de iniciar la app."

@@ -1,44 +1,35 @@
-# Agenda v23.11.2026.2
+# proyecto_sd2026
 
-Scaffold configurado (sin código de aplicación) para la aplicación web segura con MVC + web.py + Supabase.
+Configuración base, sin código de aplicación, para una aplicación web con este stack. El dominio del proyecto se define después.
 
 ## Stack
 
 - Python 3.12, web.py 0.62, supabase 2.34.0, python-dotenv 1.2.4
 - HTML5 / CSS3 / JavaScript vanilla, plantillas con `web.template.render`
-- Autenticación Supabase (email/password), sesiones validadas contra `sesiones_abiertas`
-- URLs firmadas `id_contacto:HASH` (HMAC-SHA256) contra IDOR
+- Supabase Auth (email/password) y Supabase Database (PostgreSQL)
+- Sesiones persistentes validadas contra `sesiones_abiertas` y URLs firmadas `id:HASH` (HMAC-SHA256)
 
-## Estructura preparada
+## Archivos incluidos
 
 ```
 .
-├── .devcontainer/          # Configuración de GitHub Codespaces
+├── .devcontainer/
 │   ├── devcontainer.json
 │   └── post-create.sh
-├── controllers/            # login, cerrar_sesion, index, lista_contactos,
-│                           # ver_contacto, insertar_contacto,
-│                           # actualizar_contacto, borrar_contacto
-├── models/                 # contactos, sesiones y cliente Supabase
-├── security/               # firma HMAC y validación de sesión
-├── views/                  # plantillas .html
-├── static/
-│   ├── css/
-│   ├── js/
-│   └── fotos/              # imágenes locales (default.png la agregas tú)
-├── sql/schema.sql          # tablas contactos y sesiones_abiertas + RLS
 ├── .env.example
-├── requirements.txt
-└── app.py                  # punto de entrada a crear
+├── .gitignore
+├── LICENSE
+├── README.md
+└── requirements.txt
 ```
 
-Las carpetas contienen solo `.gitkeep`: el código lo escribes tú.
+`.env` se crea localmente y no se versiona. Las carpetas de aplicación (`controllers/`, `models/`, `views/`, `security/`, `static/`) se crean cuando se defina el proyecto.
 
 ## GitHub Codespaces
 
 1. En GitHub: **Code > Codespaces > Create codespace on main**.
 2. El contenedor usa Python 3.12, instala `requirements.txt`, copia `.env.example` a `.env` si no existe y abre el puerto 8080.
-3. Edita `.env` con las credenciales reales y ejecuta `sql/schema.sql` en el SQL Editor de Supabase.
+3. Edita `.env` con las credenciales reales.
 
 ## Entorno local equivalente
 
@@ -52,21 +43,16 @@ Activa el entorno con `source .venv/bin/activate` y rellena `.env`.
 
 ## Supabase
 
-Ejecuta `sql/schema.sql` en el SQL Editor. Crea:
+- Copia el Project URL y la anon key de **Project Settings > API** a `SUPABASE_URL` y `SUPABASE_KEY` en `.env`.
+- Habilita Email/Password en **Authentication > Providers** y crea el usuario de acceso.
+- Crea la tabla `sesiones_abiertas` con una columna `token` de texto obligatoria para guardar los JWT vigentes.
+- El esquema del dominio se crea cuando se defina el proyecto.
 
-- `contactos`: `id_contacto`, `nombre`, `email`, `telefono`, `foto`.
-- `sesiones_abiertas`: `token` (token JWT vigente de cada sesión).
-
-Copia de **Project Settings > API** el Project URL y la anon key a `SUPABASE_URL` y `SUPABASE_KEY` en `.env`. `.env` está ignorado por Git.
-
-Habilita Email/Password en **Authentication > Providers** y crea el usuario con el que vas a entrar.
-
-## Convenciones para el código
+## Convenciones del stack
 
 - Un controlador por acción, con `logger = logging.getLogger(__name__)`, tipado estático y bloques `try/except` numerados si aplica.
-- Toda ruta privada valida sesión activa y token vigente en `sesiones_abiertas` antes de renderizar; si falla, redirige a `/login`.
-- Ningún `id_contacto` viaja solo en la URL: siempre `id:HASH` con HMAC-SHA256.
-- Sube imágenes a `static/fotos/` con prefijo de timestamp y extensiones `.jpg`, `.jpeg`, `.png`, `.webp`; borra el archivo físico al actualizar la foto o eliminar el contacto, omitiendo `default.png`.
-- Mensajes exigidos por la especificación: `Credenciales incorrectas, verifique sus datos`, `Contacto no encontrado`, `Contacto insertado correctamente`, `Contacto actualizado correctamente`, `Contacto eliminado correctamente`.
+- Toda ruta privada valida sesión activa y token vigente en `sesiones_abiertas` antes de ejecutarse; si falla, redirige a `/login`.
+- Ningún identificador numérico se expone sin firma: siempre `id:HASH` con HMAC-SHA256, calculado en memoria con la clave secreta del servidor, sin modificar la llave primaria en la base de datos.
+- El acceso a Supabase se hace desde el modelo con consultas parametrizadas.
 
-Cuando crees `app.py`, registra las rutas de los ocho controladores y ejecuta `python app.py` (o `uv run python app.py`).
+Cuando se defina el proyecto, crea `app.py` con las rutas y ejecuta `python app.py` (o `uv run python app.py`).
