@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+*.log
+sessions/
+.DS_Store
+.idea/
+.vscode/
+static/fotos/*
+!static/fotos/.gitkeep
+!static/fotos/default.png
